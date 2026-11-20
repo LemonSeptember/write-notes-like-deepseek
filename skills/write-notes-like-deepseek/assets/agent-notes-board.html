@@ -736,7 +736,7 @@
 
     <div class="matrix-board">
       <div class="matrix-row-head">
-        <span>编号</span>
+        <span title="按日期升序分配的固定编号（老日期小编号），不随筛选与排序改变">编号</span>
         <span>分类</span>
         <span>标题</span>
         <span>状态</span>
@@ -844,8 +844,8 @@ const Core = {
   drawerId: null,
 };
 
-// 全序日期比较器：date 相同时以唯一 id 兜底，保证任意刷新顺序一致
-const byDateDesc = (a, b) => (b.date || '').localeCompare(a.date || '') || a.id.localeCompare(b.id);
+// 全序日期比较器：同日按 id 兜底，方向与日期一致——最新优先时大编号在上，最早优先时小编号在上。
+const byDateDesc = (a, b) => (b.date || '').localeCompare(a.date || '') || b.id.localeCompare(a.id);
 const byDateAsc  = (a, b) => (a.date || '').localeCompare(b.date || '') || a.id.localeCompare(b.id);
 
 function getDB() {
@@ -1064,6 +1064,8 @@ function ingestDataset(notes) {
   });
 
   Core.nodes.sort(byDateDesc);
+  // 固定编号按日期升序分配：老日期小编号；与列表显示顺序（默认最新优先）无关。
+  [...Core.nodes].sort(byDateAsc).forEach((n, idx) => { n.fileNo = idx + 1; });
 
   document.getElementById('chip-total-count').textContent = `${notes.length} 项`;
   document.getElementById('deck-onboarding').style.display = notes.length ? 'none' : 'flex';
@@ -1375,7 +1377,7 @@ function renderDirectory() {
     const cites = Core.inCount.get(n.id) || 0;
     return `
       <div class="matrix-row-cell" data-node-id="${escapeHtml(n.id)}">
-        <span class="cell-index">#${String(idx + 1).padStart(3, '0')}</span>
+        <span class="cell-index">#${String(n.fileNo ?? idx + 1).padStart(3, '0')}</span>
         <span><span class="class-badge cls-${escapeHtml(n.cls)}">${escapeHtml(CLASS_LABELS[n.cls] || n.cls)}</span></span>
         <span class="cell-title">${escapeHtml(n.title)}</span>
         <span><span class="status-badge st-${escapeHtml(n.lifecycle)}">${escapeHtml(STATUS_LABELS[n.lifecycle] || n.lifecycle)}</span></span>
