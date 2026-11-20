@@ -11,7 +11,7 @@ const templatePath = resolve(__dirname, '../assets/agent-notes-board.html');
 const args = process.argv.slice(2);
 
 if (!existsSync(templatePath)) {
-  console.error(`❌ Template not found at: ${templatePath}`);
+  console.error(`❌ 模板不存在：${templatePath}`);
   process.exit(1);
 }
 
@@ -28,7 +28,7 @@ function checkTargetSafety(targetPath: string) {
       const isBoard = existing.includes('generator" content="agent-notes-board"') || existing.includes('id="brand-project-title"');
       if (!isBoard) {
         console.error(`❌ 错误：目标文件已存在 (${targetPath}) 且并非看板生成文件！`);
-        console.error(`💡 为防止意外覆盖已有项目页面（如 Vite/React/Vue 项目的 index.html），请指定其他输出路径或传入 --force 确认覆盖。`);
+        console.error('💡 为防止意外覆盖已有项目页面（如 Vite/React/Vue 项目的 index.html），请指定其他输出路径或传入 --force 确认覆盖。');
         process.exit(1);
       }
     } catch {}
@@ -45,8 +45,8 @@ if (isInitMode) {
   template = template.replace('id="brand-project-title">工程决策看板<', () => `id="brand-project-title">${projectName}<`);
 
   writeFileSync(targetPath, template, 'utf8');
-  console.log(`✅ [日常开发模式] 轻量看板已生成 (仅 ~69KB): ${targetPath}`);
-  console.log(`💡 用浏览器打开后，点击右上角「连接本地目录」选择 .agents/notes，后续新建/修改笔记切回浏览器即可自动热刷新！`);
+  console.log(`✅ [日常开发模式] 轻量看板已生成 (仅 ~73KB): ${targetPath}`);
+  console.log('💡 用浏览器打开后，点击右上角「连接本地目录」选择 .agents/notes，后续新建/修改笔记切回浏览器即可自动热刷新！');
   process.exit(0);
 }
 
@@ -60,11 +60,11 @@ checkTargetSafety(outputPath);
 const LIFECYCLES = ['implemented', 'proposed', 'rejected', 'archived'];
 
 if (!existsSync(notesDir)) {
-  console.error(`❌ Notes directory not found at: ${notesDir}`);
+  console.error(`❌ 笔记目录不存在：${notesDir}`);
   process.exit(1);
 }
 
-/** Blank out fenced code-block lines so `## ` headings and [](.md) links inside them are never parsed as note structure. */
+/** 把围栏代码块的行抹空，使代码块里的 `## ` 标题和 [](.md) 链接不被当成笔记结构。 */
 function stripFencedBlocks(raw: string): string {
   let inFence = false;
   return raw
@@ -154,7 +154,7 @@ function parseNoteContent(raw: string, relPath: string, slugToId: Map<string, st
 }
 
 function walk(dir: string, baseDir: string = dir): any[] {
-  const noteFiles = new Map<string, string>(); // relPath -> fullPath
+  const noteFiles = new Map<string, string>(); // 相对路径 -> 完整路径
 
   function scan(currentDir: string) {
     const items = readdirSync(currentDir, { withFileTypes: true });
@@ -194,7 +194,7 @@ function walk(dir: string, baseDir: string = dir): any[] {
       const raw = readFileSync(fullPath, 'utf8');
       results.push(parseNoteContent(raw, relPath, slugToId));
     } catch (err) {
-      console.warn(`⚠️ Error reading ${relPath}:`, err);
+      console.warn(`⚠️ 读取失败：${relPath}：`, err);
     }
   }
 

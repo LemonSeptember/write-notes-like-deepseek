@@ -1,11 +1,11 @@
 /**
- * Shared structural source of truth for the Agent Note tree.
- * Portable: resolves .agents/notes from cwd (or AGENT_NOTE_ROOT env).
+ * Agent Note 目录树的结构基准（单一事实来源）。
+ * 可移植：从当前工作目录解析 .agents/notes（也可用 AGENT_NOTE_ROOT 环境变量覆盖）。
  */
 import { readdirSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-/** Recurse `dir` and return posix-relative `.md` paths prefixed with `prefix`. Node 18 compatible (no fs.globSync). */
+/** 递归 `dir`，返回以 `prefix` 为前缀的 posix 风格 `.md` 相对路径。兼容 Node 18（不用 fs.globSync）。 */
 function listMd(dir: string, prefix: string): string[] {
   if (!existsSync(dir)) return []
   const out: string[] = []
@@ -42,11 +42,11 @@ export function walkAgentNoteTree(): { notes: AgentNote[]; errors: string[] } {
   if (!existsSync(agentNoteRoot)) return { notes, errors }
   for (const entry of readdirSync(agentNoteRoot, { withFileTypes: true })) {
     if (entry.name === 'INDEX.md') {
-      errors.push('structure: INDEX.md — centralized Agent Note indexes are forbidden; browse the lifecycle/class tree or search the repository')
+      errors.push('结构错误：INDEX.md — 禁止集中式 Agent Note 索引；请浏览 lifecycle/class 目录树或搜索仓库')
       continue
     }
     if (entry.isDirectory() && entry.name !== AGENT_NOTE_ARCHIVE && !(AGENT_NOTE_LIFECYCLES as readonly string[]).includes(entry.name)) {
-      errors.push(`structure: ${entry.name}/ — unknown lifecycle folder (allowed: ${AGENT_NOTE_LIFECYCLES.join(', ')}, plus ${AGENT_NOTE_ARCHIVE}/)`)
+      errors.push(`结构错误：${entry.name}/ — 未知的生命周期文件夹（允许：${AGENT_NOTE_LIFECYCLES.join(', ')}，另有 ${AGENT_NOTE_ARCHIVE}/）`)
     }
   }
   for (const lifecycle of AGENT_NOTE_LIFECYCLES) {
@@ -57,15 +57,15 @@ export function walkAgentNoteTree(): { notes: AgentNote[]; errors: string[] } {
       const cls = segs[1]
       const base = segs[2]
       if (segs.length !== 3 || cls === undefined || base === undefined) {
-        errors.push(`structure: ${match} — expected {lifecycle}/{class}/file.md (got depth ${segs.length})`)
+        errors.push(`结构错误：${match} — 路径应为 {lifecycle}/{class}/file.md（实际深度 ${segs.length}）`)
         continue
       }
       if (!(AGENT_NOTE_CLASSES as readonly string[]).includes(cls)) {
-        errors.push(`structure: ${match} — unknown class folder "${cls}" (allowed: ${AGENT_NOTE_CLASSES.join(', ')})`)
+        errors.push(`结构错误：${match} — 未知的分类文件夹 "${cls}"（允许：${AGENT_NOTE_CLASSES.join(', ')}）`)
         continue
       }
       if (!/^\d{4}-\d{2}-\d{2}-.+\.md$/.test(base)) {
-        errors.push(`structure: ${match} — filename must be yyyy-mm-dd-topic.md`)
+        errors.push(`结构错误：${match} — 文件名必须为 yyyy-mm-dd-topic.md`)
         continue
       }
       notes.push({ lifecycle, rel: match, date: base.slice(0, 10) })

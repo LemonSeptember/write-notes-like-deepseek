@@ -863,7 +863,7 @@ async function saveDirHandle(handle) {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     tx.objectStore(STORE_NAME).put(handle, 'notesDirHandle');
     await new Promise(r => tx.oncomplete = r);
-  } catch (e) { console.warn('Cannot persist dir handle', e); }
+  } catch (e) { console.warn('无法持久化目录句柄', e); }
 }
 
 async function loadSavedDirHandle() {
@@ -900,7 +900,7 @@ function parseMarkdown(text) {
       return linkText;
     }
     const safeHref = escapeHtml(cleanHref);
-    return `<a href="javascript:void(0)" class="md-deep-link" data-deep-link="${safeHref}" style="color:var(--brand-cyan);text-decoration:underline;">${linkText}</a>`;
+    return `<a href="javascript:void(0)" class="md-deep-link" data-deep-link="${safeHref}" style="color:var(--teal-prune);text-decoration:underline;">${linkText}</a>`;
   });
   s = s.replace(/^- (.*)$/gm, '• $1');
   return s.split(/\n{2,}/).map(p => {
@@ -911,7 +911,18 @@ function parseMarkdown(text) {
   }).join('');
 }
 
+// 与 build-board.ts 的 stripFencedBlocks 保持一致：把围栏代码块整段抹空，
+// 避免代码块里的 "## " 标题或 [](.md) 链接被当成笔记结构。
+function stripFencedBlocks(raw) {
+  let inFence = false;
+  return String(raw).replace(/\r\n?/g, '\n').split('\n').map(l => {
+    if (/^\s{0,3}```/.test(l)) { inFence = !inFence; return ''; }
+    return inFence ? '' : l;
+  }).join('\n');
+}
+
 function parseNote(raw, relPath, slugToId = new Map()) {
+  const parseable = stripFencedBlocks(raw);
   const slug = relPath.split('/').pop().replace(/\.md$/, '');
   const parts = relPath.split('/');
   const lifecycle = parts[0];
@@ -924,12 +935,13 @@ function parseNote(raw, relPath, slugToId = new Map()) {
   const dMatch = /^(\d{4}-\d{2}-\d{2})/.exec(slug);
   if (dMatch) date = dMatch[1];
 
-  const h1Match = /^# Agent Note[^:：]*[:：]\s*(.*)$/m.exec(raw);
+  const h1Match = /^# Agent Note[^:：]*[:：]\s*(.*)$/m.exec(parseable);
   if (h1Match) title = h1Match[1].trim();
 
   function extractSection(pattern) {
-    const re = new RegExp(`^## (?:${pattern})\\s*\\n+([\\s\\S]*?)(?=^## |\\s*$)`, 'm');
-    const m = re.exec(raw);
+    // 尾界与 build-board.ts 相同：取到下一个 "## " 标题或文末，而不是遇到第一个空行就截断。
+    const re = new RegExp(`^## (?:${pattern})\\s*\\n+([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm');
+    const m = re.exec(parseable);
     return m ? m[1].trim() : '';
   }
 
@@ -939,7 +951,7 @@ function parseNote(raw, relPath, slugToId = new Map()) {
   const consequences = extractSection('Consequences|后果');
 
   const links = [];
-  for (const m of raw.matchAll(/\]\(([^)]+\.md)\)/g)) {
+  for (const m of parseable.matchAll(/\]\(([^)]+\.md)\)/g)) {
     let targetHref = m[1].split('#')[0].trim();
     if (targetHref.includes('://')) continue;
     targetHref = targetHref.replace(/\.zh\.md$/, '.md');
@@ -1003,7 +1015,7 @@ async function scanDirectory(rootHandle) {
               notesMap.set(cleanRel, text);
             }
           } catch (err) {
-            console.warn('Read note error:', subPath, err);
+            console.warn('读取笔记失败：', subPath, err);
           }
         }
       }
@@ -1139,7 +1151,7 @@ function renderBaseline() {
       <div class="chamber-pod">
         <div class="chamber-header">
           <span class="chamber-name">
-            <span style="width:6px;height:6px;background:var(--brand-cyan);border-radius:1px;"></span>
+            <span style="width:6px;height:6px;background:var(--teal-prune);border-radius:1px;"></span>
             ${clsLabel}
           </span>
           <span class="chamber-count">${colNodes.length}</span>
@@ -1347,7 +1359,7 @@ function renderDirectory() {
     if (st && n.lifecycle !== st) return false;
     if (cls && n.cls !== cls) return false;
     if (q) {
-      const hay = `${n.title} ${n.slug} ${n.problem || ''} ${n.decision || ''}`.toLowerCase();
+      const hay = `${n.title} ${n.slug} ${n.problem || ''} ${n.decision || ''} ${n.alternatives || ''} ${n.consequences || ''} ${n.rawBody || ''}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -1513,7 +1525,7 @@ async function triggerLiveSync(silent = false) {
     beaconText.textContent = `已连接本地目录（${notes.length} 篇）`;
     Core.lastSyncTime = Date.now();
   } catch (err) {
-    console.error('Directory sync fault:', err);
+    console.error('目录同步失败：', err);
     radar.className = 'radar-dot';
     beaconText.textContent = '重新授权目录';
   }
@@ -1543,7 +1555,7 @@ async function startMission() {
 
     const matches = [];
     for (const n of Core.nodes) {
-      const hay = `${n.title} ${n.titleZh || ''} ${n.slug} ${n.problem || ''} ${n.problemZh || ''} ${n.decision || ''} ${n.decisionZh || ''}`.toLowerCase();
+      const hay = `${n.title} ${n.titleZh || ''} ${n.slug} ${n.problem || ''} ${n.problemZh || ''} ${n.decision || ''} ${n.decisionZh || ''} ${n.alternatives || ''} ${n.consequences || ''} ${n.rawBody || ''}`.toLowerCase();
       if (hay.includes(q)) matches.push(n);
     }
 
@@ -1696,7 +1708,7 @@ async function startMission() {
       await saveDirHandle(handle);
       await triggerLiveSync();
     } catch (err) {
-      if (err.name !== 'AbortError') console.error('Directory request fault:', err);
+      if (err.name !== 'AbortError') console.error('目录授权请求失败：', err);
     }
   }
 

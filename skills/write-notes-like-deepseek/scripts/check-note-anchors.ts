@@ -1,10 +1,10 @@
 /**
- * Soft report: physical reverse anchors (`// Note: ... 见 .agents/notes/...`).
- *   A. anchors in source code pointing at notes that do not exist (dangling)
- *   B. implemented notes with zero inbound code anchors (suspected missing anchor)
- * Exit code is always 0 — this is an advisory report, not a gate.
- * Env: AGENT_NOTE_CODE_ROOT (default: cwd) — source root to scan.
- * Run: npx tsx <skill-dir>/scripts/check-note-anchors.ts
+ * 软报告：物理反向锚点（`// Note: ... 见 .agents/notes/...`）。
+ *   A. 源码里指向不存在笔记的锚点（悬空）
+ *   B. 没有任何入站代码锚点的 implemented 笔记（疑似缺锚点）
+ * 退出码恒为 0 — 这是建议性报告，不是门禁。
+ * 环境变量：AGENT_NOTE_CODE_ROOT（默认当前目录）—— 要扫描的源码根。
+ * 运行：npx tsx <skill目录>/scripts/check-note-anchors.ts
  */
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -23,7 +23,7 @@ const SKIP_DIR = new Set([
 const ANCHOR_RE = /(?:\/\/|#|\/\*|\*\s*|<!--\s*)\s*Note[:：]/;
 const PATH_RE = /\.agents\/notes\/([^\s'"`)>]+?\.md)/;
 
-const anchorHits = new Map<string, string[]>(); // note rel (from notes root, lowercased basename fallback) -> [code rel:line]
+const anchorHits = new Map<string, string[]>(); // 笔记相对路径（以笔记根为基准）-> [代码相对路径:行号]
 const dangling: string[] = [];
 const notePathRefs: string[] = [];
 
@@ -51,7 +51,7 @@ function walk(dir: string, depth: number) {
       if (!ANCHOR_RE.test(l)) continue;
       const m = PATH_RE.exec(l);
       if (!m) {
-        notePathRefs.push(`${rel}:${i + 1} — Note anchor without a .agents/notes path`);
+        notePathRefs.push(`${rel}:${i + 1} — Note 锚点缺少 .agents/notes 路径`);
         continue;
       }
       const noteRel = m[1].split("#")[0].replace(/^\.\//, "");
@@ -60,7 +60,7 @@ function walk(dir: string, depth: number) {
       list.push(`${rel}:${i + 1}`);
       anchorHits.set(key, list);
       if (!existsSync(join(agentNoteRoot, key))) {
-        dangling.push(`${rel}:${i + 1} — .agents/notes/${key} does not exist`);
+        dangling.push(`${rel}:${i + 1} — .agents/notes/${key} 不存在`);
       }
     }
   }
@@ -68,11 +68,10 @@ function walk(dir: string, depth: number) {
 
 walk(codeRoot, 0);
 
-// implemented notes with zero inbound anchors
+// 没有任何入站锚点的 implemented 笔记
 const { notes } = walkAgentNoteTree();
 const implemented = notes.filter((n) => n.lifecycle === "implemented");
-// basename -> note count: a slug shared by several notes is ambiguous and
-// must not let one note's anchor count for another.
+// basename -> 笔记数量：多个笔记共用 slug 时有歧义，不能让一篇笔记的锚点被算到另一篇头上。
 const slugCount = new Map<string, number>();
 for (const n of notes) {
   const slug = n.rel.split("/").pop()!;
@@ -86,18 +85,18 @@ for (const n of implemented) {
   if (!direct && (bySlug.length === 0 || (slugCount.get(slug) ?? 0) > 1)) unanchored.push(n.rel);
 }
 
-console.log(`scanned: ${codeRoot}`);
-console.log(`anchors found: ${[...anchorHits.values()].reduce((a, b) => a + b.length, 0)} across ${anchorHits.size} note(s)`);
+console.log(`扫描目录：${codeRoot}`);
+console.log(`找到锚点：${[...anchorHits.values()].reduce((a, b) => a + b.length, 0)} 处，涉及 ${anchorHits.size} 篇笔记`);
 if (notePathRefs.length) {
-  console.log(`\n[anchors without note path] ${notePathRefs.length}`);
+  console.log(`\n[缺少笔记路径的锚点] ${notePathRefs.length}`);
   for (const r of notePathRefs.slice(0, 20)) console.log(`  - ${r}`);
 }
 if (dangling.length) {
-  console.log(`\n[dangling anchors] ${dangling.length}`);
+  console.log(`\n[悬空锚点] ${dangling.length}`);
   for (const d of dangling.slice(0, 20)) console.log(`  - ${d}`);
 } else {
-  console.log("\n[dangling anchors] none");
+  console.log("\n[悬空锚点] 无");
 }
-console.log(`\n[implemented notes without any code anchor] ${unanchored.length} of ${implemented.length}`);
+console.log(`\n[没有任何代码锚点的 implemented 笔记] ${unanchored.length} / ${implemented.length}`);
 for (const u of unanchored.slice(0, 20)) console.log(`  - ${u}`);
-if (unanchored.length > 20) console.log(`  ... and ${unanchored.length - 20} more`);
+if (unanchored.length > 20) console.log(`  …… 另有 ${unanchored.length - 20} 条`);

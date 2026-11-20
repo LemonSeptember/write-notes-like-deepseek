@@ -1,6 +1,6 @@
 ---
 name: write-notes-like-deepseek
-description: Use when a change is non-trivial by DSH standards (behavior, architecture, cross-file contracts, process/tooling, testing strategy, or on-disk/wire/config formats), when choosing between technical alternatives, superseding a decision, or writing a postmortem. Records the why and rejected options in .agents/notes/ with script-enforced gates; skips purely mechanical edits (CRUD, styling, patches, tagging, formatting).
+description: 当改动按 DSH 标准属于非平凡改动（行为、架构、跨文件契约、流程与工具链、测试策略、落盘/网络/配置格式）、需要在技术方案之间取舍、取代旧决策或写复盘时使用；把为什么这样改和放弃了什么记录在 .agents/notes/，用脚本门禁强制；纯机械改动（CRUD、样式、补丁、打标、格式化）跳过。
 ---
 
 # Write Notes Like DeepSeek
@@ -181,7 +181,7 @@ npx tsx .agents/skills/write-notes-like-deepseek/scripts/build-board.ts --init b
 
 团队可将本 Skill 的 `templates/verify-notes.yml` 复制到宿主仓库 `.github/workflows/verify-notes.yml`，调整为实际安装路径，并将项目级 Skill 文件一起提交；模板在 Skill 目录内不会执行。可在 `CONTRIBUTING.md` / PR 模板加一句「重要改动必带一篇笔记」。
 
-## References
+## 参考资料
 
 按需加载：
 
