@@ -236,7 +236,7 @@ npx tsx .agents/skills/write-notes-like-deepseek/scripts/check-note-anchors.ts
 npx skills add czm15053/write-notes-like-deepseek
 ```
 
-把以下规则加入项目的 `AGENTS.md` 或 `CLAUDE.md`，AI 就会自动遵守。现成模板见 [`templates/AGENTS.md`](skills/write-notes-like-deepseek/templates/AGENTS.md)，复制到项目根即可（技能安装包里也带这一份）：
+把以下规则加入项目的 `AGENTS.md` 或 `CLAUDE.md`，AI 就会自动遵守。现成模板见 [`templates/AGENTS.template.md`](skills/write-notes-like-deepseek/templates/AGENTS.template.md)，复制到项目根并重命名为 `AGENTS.md` 即可（技能安装包里也带这一份）：
 
 ```markdown
 ## 重要改动必须留笔记
@@ -244,7 +244,7 @@ npx skills add czm15053/write-notes-like-deepseek
 1. 非平凡改动（改了行为、架构、跨文件契约、流程与工具链、测试策略、落盘/网络/配置格式）前，遵循 `~/.agents/skills/write-notes-like-deepseek/SKILL.md` 写或更新笔记；机械性小改（样式、格式化、打标、不改行为的补丁）直接提交。
 2. 写之前先检索 .agents/notes/ 里的同主题旧笔记：有归属就地更新；新想法先放 proposed/，落地随同代码改动转 implemented/；新方案彻底取代旧决策时，同批归档旧篇并标明被谁取代。
 3. 被放弃的方案先写它最强的理由，再解释为什么不用。
-4. 提交前在仓库根目录用 PowerShell（pwsh）跑校验（`~` 会展开），红了先修再交：
+4. 提交前在仓库根目录跑校验（需用能展开 `~` 的 shell：PowerShell / bash / zsh），红了先修再交：
    `npx tsx ~/.agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-tree.ts && npx tsx ~/.agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-format.ts && npx tsx ~/.agents/skills/write-notes-like-deepseek/scripts/verify-archived-agent-notes.ts`
 ```
 
@@ -299,7 +299,7 @@ npx tsx .agents/skills/write-notes-like-deepseek/scripts/build-board.ts --bundle
 ## 仓库导览
 
 - [`SKILL.md`](skills/write-notes-like-deepseek/SKILL.md)：装给 AI 的主契约——先判「要不要写」，再谈怎么写。
-- [`templates/`](skills/write-notes-like-deepseek/templates/)：`proposed` / `implemented` / `rejected` 三份笔记填空模板，外加一份可直接复制到项目根的 [`AGENTS.md`](skills/write-notes-like-deepseek/templates/AGENTS.md) 规则模板，以及 `verify-notes.yml`（团队 CI）。
+- [`templates/`](skills/write-notes-like-deepseek/templates/)：`proposed` / `implemented` / `rejected` 三份笔记填空模板，外加一份可复制到项目根并重命名为 `AGENTS.md` 的 [`AGENTS.template.md`](skills/write-notes-like-deepseek/templates/AGENTS.template.md) 规则模板，以及 `verify-notes.yml`（团队 CI）。
 - [`references/when-to-write.md`](skills/write-notes-like-deepseek/references/when-to-write.md)：什么时候写、什么时候原地改、什么时候归档。
 - [`references/archiving.md`](skills/write-notes-like-deepseek/references/archiving.md)：封存规矩——被取代的老决定怎么干净归档。
 - [`references/quality-gate.md`](skills/write-notes-like-deepseek/references/quality-gate.md)：写完笔记后的语义自检清单。
