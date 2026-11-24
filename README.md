@@ -236,7 +236,7 @@ npx tsx .agents/skills/write-notes-like-deepseek/scripts/check-note-anchors.ts
 npx skills add czm15053/write-notes-like-deepseek
 ```
 
-把以下规则加入项目的 `AGENTS.md` 或 `CLAUDE.md`，AI 就会自动遵守：
+把以下规则加入项目的 `AGENTS.md` 或 `CLAUDE.md`，AI 就会自动遵守。现成模板见 [`templates/AGENTS.md`](skills/write-notes-like-deepseek/templates/AGENTS.md)，复制到项目根即可（技能安装包里也带这一份）：
 
 ```markdown
 ## 重要改动必须留笔记
@@ -299,7 +299,7 @@ npx tsx .agents/skills/write-notes-like-deepseek/scripts/build-board.ts --bundle
 ## 仓库导览
 
 - [`SKILL.md`](skills/write-notes-like-deepseek/SKILL.md)：装给 AI 的主契约——先判「要不要写」，再谈怎么写。
-- [`templates/`](skills/write-notes-like-deepseek/templates/)：`proposed` / `implemented` / `rejected` 三份填空模板。
+- [`templates/`](skills/write-notes-like-deepseek/templates/)：`proposed` / `implemented` / `rejected` 三份笔记填空模板，外加一份可直接复制到项目根的 [`AGENTS.md`](skills/write-notes-like-deepseek/templates/AGENTS.md) 规则模板，以及 `verify-notes.yml`（团队 CI）。
 - [`references/when-to-write.md`](skills/write-notes-like-deepseek/references/when-to-write.md)：什么时候写、什么时候原地改、什么时候归档。
 - [`references/archiving.md`](skills/write-notes-like-deepseek/references/archiving.md)：封存规矩——被取代的老决定怎么干净归档。
 - [`references/quality-gate.md`](skills/write-notes-like-deepseek/references/quality-gate.md)：写完笔记后的语义自检清单。
