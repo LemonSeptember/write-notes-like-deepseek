@@ -196,34 +196,34 @@ Status: implemented
 
 ## 本地校验：零依赖，`npx` 直接跑
 
-> 校验脚本通过 Node.js 和 `npx tsx` 运行。以下命令在宿主项目根目录执行，使用项目级安装位置 `.agents/skills/write-notes-like-deepseek/`；若安装在 `.claude/skills/` 或全局目录，请替换为实际 Skill 路径。不要切换到 Skill 目录运行，默认检查的是当前目录下的 `.agents/notes/`。
+> 校验脚本通过 Node.js 和 `npx tsx` 运行。以下命令在宿主项目根目录执行，默认使用多数 Agent 的全局安装位置 `~/.agents/skills/write-notes-like-deepseek/`（`~` 在 PowerShell / bash / zsh 下会展开）；若装在 `.claude/skills/` 或项目级 `.agents/skills/`，把前缀换成实际路径即可。不要切换到 Skill 目录运行，默认检查的是当前目录下的 `.agents/notes/`。
 
 ```bash
 # 1. 目录、类别、文件名、笔记之间的相对链接
-npx tsx .agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-tree.ts
+npx tsx ~/.agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-tree.ts
 
 # 2. 头部与骨架：状态行、必备小节、备选方案必填、implemented 禁用提案标题
-npx tsx .agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-format.ts
+npx tsx ~/.agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-format.ts
 
 # 3. 封存区体检：归档笔记的头部布局、封印哈希、只增不改（没有 git 自动降级）
-npx tsx .agents/skills/write-notes-like-deepseek/scripts/verify-archived-agent-notes.ts
+npx tsx ~/.agents/skills/write-notes-like-deepseek/scripts/verify-archived-agent-notes.ts
 
 # 4. 老方案被取代，一键归档：只插 Archived: 一行 + 封印 + 列出谁还链着它
 #    --superseded-by 在新笔记里补互链，不写进归档篇
-npx tsx .agents/skills/write-notes-like-deepseek/scripts/archive-agent-note.ts .agents/notes/implemented/<类别>/<文件名>.md \
+npx tsx ~/.agents/skills/write-notes-like-deepseek/scripts/archive-agent-note.ts .agents/notes/implemented/<类别>/<文件名>.md \
   --superseded-by .agents/notes/implemented/<类别>/<新笔记>.md
 
 # 5. 可选体检（只提醒不报错，不进 CI）：代码里若有 // Note: 锚点，是否指着不存在的笔记
-npx tsx .agents/skills/write-notes-like-deepseek/scripts/check-note-anchors.ts
+npx tsx ~/.agents/skills/write-notes-like-deepseek/scripts/check-note-anchors.ts
 ```
 
-配进 `package.json`：
+配进 `package.json`（注意：`npm run` 在 Windows 下用 `cmd` 执行，`~` **不会**展开，所以脚本里用 `%USERPROFILE%`；macOS / Linux 请换成 `$HOME`，或改用项目级的 `.agents/skills/...` 相对路径）：
 
 ```json
 {
   "scripts": {
-    "verify-notes": "npx tsx .agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-tree.ts && npx tsx .agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-format.ts && npx tsx .agents/skills/write-notes-like-deepseek/scripts/verify-archived-agent-notes.ts",
-    "archive-note": "npx tsx .agents/skills/write-notes-like-deepseek/scripts/archive-agent-note.ts"
+    "verify-notes": "npx tsx \"%USERPROFILE%/.agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-tree.ts\" && npx tsx \"%USERPROFILE%/.agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-format.ts\" && npx tsx \"%USERPROFILE%/.agents/skills/write-notes-like-deepseek/scripts/verify-archived-agent-notes.ts\"",
+    "archive-note": "npx tsx \"%USERPROFILE%/.agents/skills/write-notes-like-deepseek/scripts/archive-agent-note.ts\""
   }
 }
 ```
@@ -266,8 +266,8 @@ AI 会自动在 `proposed/` 输出结构化提案（背景、备选及各自的�
 不是必需品，只是个顺手的观察窗：一条命令生成单文件 `board.html`，双击就能看——**被引用最多的那几篇笔记**（就是这套系统里最怕碰的决定）、所有被否决方案的避坑清单、按月份的演进时间线。日常开发中它直读本地笔记目录，改了笔记切回浏览器就自动刷新；也可以打包成单文件发到网上（[在线演示](https://czm15053.github.io/write-notes-like-deepseek-demo/)就是这么来的）。
 
 ```bash
-npx tsx .agents/skills/write-notes-like-deepseek/scripts/build-board.ts --init board.html "项目决策看板"     # 本地直读，热更新
-npx tsx .agents/skills/write-notes-like-deepseek/scripts/build-board.ts --bundle .agents/notes demo.html "项目决策看板"  # 打包分发
+npx tsx ~/.agents/skills/write-notes-like-deepseek/scripts/build-board.ts --init board.html "项目决策看板"     # 本地直读，热更新
+npx tsx ~/.agents/skills/write-notes-like-deepseek/scripts/build-board.ts --bundle .agents/notes demo.html "项目决策看板"  # 打包分发
 ```
 
 真实界面（来自内嵌 DeepSeek Harness 1,267 篇真实笔记的[在线演示](https://czm15053.github.io/write-notes-like-deepseek-demo/)）：
