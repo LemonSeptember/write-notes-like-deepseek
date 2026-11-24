@@ -241,11 +241,14 @@ npx skills add czm15053/write-notes-like-deepseek
 ```markdown
 ## 重要改动必须留笔记
 
-1. 非平凡改动（改了行为、架构、跨文件契约、流程与工具链、测试策略、落盘/网络/配置格式）前，遵循 .agents/skills/write-notes-like-deepseek/SKILL.md 写或更新笔记；机械性小改（样式、格式化、打标、不改行为的补丁）直接提交。
+1. 非平凡改动（改了行为、架构、跨文件契约、流程与工具链、测试策略、落盘/网络/配置格式）前，遵循 `~/.agents/skills/write-notes-like-deepseek/SKILL.md` 写或更新笔记；机械性小改（样式、格式化、打标、不改行为的补丁）直接提交。
 2. 写之前先检索 .agents/notes/ 里的同主题旧笔记：有归属就地更新；新想法先放 proposed/，落地随同代码改动转 implemented/；新方案彻底取代旧决策时，同批归档旧篇并标明被谁取代。
 3. 被放弃的方案先写它最强的理由，再解释为什么不用。
-4. 提交前跑 npm run verify-notes，红了先修再交。
+4. 提交前在仓库根目录用 PowerShell（pwsh）跑校验（`~` 会展开），红了先修再交：
+   `npx tsx ~/.agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-tree.ts && npx tsx ~/.agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-format.ts && npx tsx ~/.agents/skills/write-notes-like-deepseek/scripts/verify-archived-agent-notes.ts`
 ```
+
+> 说明：上面按全局安装（`~/.agents/skills/`）书写——`~` 只有在 PowerShell 下执行才会展开；若装成项目级，把前缀换成 `.agents/skills/` 即可。第 4 条用 `npx tsx` 直跑脚本，不依赖 `package.json`；已经在 `package.json` 配好 `npm run verify-notes` 的项目，也可以直接用它（配置见上文「本地校验」一节）。
 
 **日常使用就一句话**——像平时一样提需求，改动大的时候点名让它先立笔记：
 
